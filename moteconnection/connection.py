@@ -29,7 +29,7 @@ class ConnectionException(Exception):
 
 class Connection(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, autostart=True):
         super(Connection, self).__init__()
         self._dispatchers = {}
 
@@ -57,7 +57,9 @@ class Connection(threading.Thread):
 
         self._alive = threading.Event()
         self._alive.set()
-        self.start()
+
+        if autostart:
+            self.start()
 
     def join(self, timeout=None):
         self._alive.clear()
@@ -81,6 +83,11 @@ class Connection(threading.Thread):
             self._dispatchers[dispatch].detach()
             del self._dispatchers[dispatch]
 
+    def retrieve_dispatcher(self, dispatch):
+        if dispatch in self._dispatchers:
+            return self._dispatchers[dispatch]
+        return None
+
     def connected(self):
         return self._connected.isSet() and not self._disconnected.isSet()
 
@@ -92,6 +99,7 @@ class Connection(threading.Thread):
         :return:
         """
         if self._connected.isSet() is False and self._disconnected.isSet():
+            log.debug("connect")
             conntype, conninfo = split_in_two(connection_string, "@")
             if conntype in self.connection_types:
                 self._connection_type = conntype
@@ -109,10 +117,16 @@ class Connection(threading.Thread):
             raise ConnectionBusyException("Busy")
 
     def disconnect(self):
+        self._reconnect_period = None
+        log.debug("disconnect")
+
+        while not self._connected.is_set() and not self._disconnected.is_set():  # Connecting
+            log.debug("waiting")
+            self._connected.wait(0.1)
+
         if self._real_connection is not None:
             self._real_connection.join()
 
-        self._reconnect_period = None
         self._disconnected.wait()
 
     def _subsend(self, packet):
