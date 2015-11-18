@@ -1,3 +1,6 @@
+"""connection_events.py: Connection event types."""
+
+
 __author__ = "Raido Pahtma"
 __license__ = "MIT"
 

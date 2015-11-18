@@ -1,3 +1,6 @@
+"""utils.py: Random utility functions for moteconnection."""
+
+
 __author__ = "Raido Pahtma"
 __license__ = "MIT"
 

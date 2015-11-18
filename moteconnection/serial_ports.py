@@ -1,11 +1,14 @@
-__author__ = "Raido Pahtma"
-__license__ = "MIT"
+"""serial_ports.py: Serial port discovery functions."""
 
 import re
 import os
 import sys
 import glob
 import serial
+
+
+__author__ = "Raido Pahtma"
+__license__ = "MIT"
 
 
 def _list_windows_serial_ports():

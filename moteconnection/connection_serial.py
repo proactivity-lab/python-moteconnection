@@ -1,5 +1,4 @@
-__author__ = "Raido Pahtma"
-__license__ = "MIT"
+""""connection_serial.py: Serial connection object."""
 
 import Queue
 import serial
@@ -14,6 +13,11 @@ from moteconnection.connection_events import ConnectionEvents
 import logging
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
+
+
+__author__ = "Raido Pahtma"
+__license__ = "MIT"
+
 
 def itut_g16_crc(data):
     crc = 0

@@ -1,5 +1,4 @@
-__author__ = "Raido Pahtma"
-__license__ = "MIT"
+"""connection.py: Connection for connecting to serial or sf ports."""
 
 import time
 import Queue
@@ -13,6 +12,10 @@ from moteconnection.connection_forwarder import SfConnection
 import logging
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
+
+
+__author__ = "Raido Pahtma"
+__license__ = "MIT"
 
 
 class DispatcherError(Exception):
@@ -160,13 +163,13 @@ class Connection(threading.Thread):
                     log.info("connected")
                     self._connected.set()
                     self._disconnected.clear()
-                    if self._event_connected is not None:
+                    if callable(self._event_connected):
                         self._event_connected()
                 elif item_type == ConnectionEvents.EVENT_DISCONNECTED:
                     log.info("disconnected")
                     self._connected.clear()
                     self._disconnected.set()
-                    if self._event_disconnected is not None:
+                    if callable(self._event_disconnected):
                         self._event_disconnected()
                 elif item_type == ConnectionEvents.EVENT_START_CONNECT:
                     self._connect()
@@ -174,7 +177,7 @@ class Connection(threading.Thread):
                     raise Exception("item_type is unknown!")
             except Queue.Empty:
                 if self._disconnected.isSet():
-                    if self._reconnect_period is not None:
+                    if self._reconnect_period is not None and self._reconnect_period >= 0:
                         if time.time() > self._last_connect + self._reconnect_period:
                             self._queue.put((ConnectionEvents.EVENT_START_CONNECT, None))
                 continue

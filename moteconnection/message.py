@@ -1,5 +1,4 @@
-__author__ = "Raido Pahtma"
-__license__ = "MIT"
+"""message.py: ActiveMessage object."""
 
 import struct
 from moteconnection.connection import Dispatcher
@@ -7,6 +6,10 @@ from moteconnection.packet import Packet
 
 import logging
 log = logging.getLogger(__name__)
+
+
+__author__ = "Raido Pahtma"
+__license__ = "MIT"
 
 
 AM_BROADCAST_ADDR = 0xFFFF

@@ -1,11 +1,14 @@
-__author__ = "Raido Pahtma"
-__license__ = "MIT"
+"""packet.py: Raw packet object."""
 
 import struct
 from moteconnection.connection import Dispatcher
 
 import logging
 log = logging.getLogger(__name__)
+
+
+__author__ = "Raido Pahtma"
+__license__ = "MIT"
 
 
 class Packet(object):
