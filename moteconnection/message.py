@@ -19,15 +19,15 @@ class Message(Packet):
     STRUCT_FORMAT_STRING = "! B H H B B B"
     STRUCT_FORMAT_SIZE = struct.calcsize(STRUCT_FORMAT_STRING)
 
-    def __init__(self):
+    def __init__(self, ptype=0, destination=None, payload=""):
         """ Fields are initialized to None to detect if the user has set them
         or they should be set by a messaging layer to a default value."""
         super(Message, self).__init__(dispatch=0)
-        self._destination = None
+        self._type = ptype
+        self._destination = destination
         self._source = None
         self._group = None
-        self._type = None
-        self._payload = ""
+        self._payload = payload
         self._footer = ""
 
     @property
