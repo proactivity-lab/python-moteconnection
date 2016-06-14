@@ -9,8 +9,10 @@ from setuptools import setup
 
 doclines = __doc__.split("\n")
 
+import moteconnection
+
 setup(name='moteconnection',
-      version='0.1.2',
+      version=moteconnection.version,
       description='Python library for using TinyOS inspired serial and tcp connections.',
       long_description='\n'.join(doclines[2:]),
       url='http://github.com/proactivity-lab/python-moteconnection',
