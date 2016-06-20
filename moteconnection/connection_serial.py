@@ -190,7 +190,6 @@ class SerialConnection(threading.Thread):
                         if recv_buf.len > 0:
                             try:
                                 seq, packet = self._process_incoming_packet(recv_buf.getvalue())
-                                recv_buf = StringIO()
                                 if seq is None:
                                     if packet is not None:
                                         self._queue.put((ConnectionEvents.MESSAGE_INCOMING, packet))
@@ -221,6 +220,8 @@ class SerialConnection(threading.Thread):
 
                             except SerialPacketException as e:
                                 log.warning(e.message)
+                            finally:
+                                recv_buf = StringIO()
 
                     elif data == self.HDLC_ESCAPE_BYTE:
                         escape = True
