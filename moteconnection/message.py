@@ -107,6 +107,10 @@ class MessageDispatcher(Dispatcher):
         self._snoopers = {}
         self._default_snooper = None
 
+    @property
+    def address(self):
+        return self._address
+
     def send(self, message):
         if message._source is None:
             message._source = self._address
@@ -121,8 +125,16 @@ class MessageDispatcher(Dispatcher):
         else:
             self._receivers[ptype] = receiver
 
+    def deregister_receiver(self, ptype, receiver):
+        if ptype in self._receivers:
+            if self._receivers[ptype] == receiver:
+                del self._receivers[ptype]
+
     def register_default_receiver(self, receiver):
         self._default_receiver = receiver
+
+    def deregister_default_receiver(self, receiver):
+        self._default_receiver = None
 
     def register_snooper(self, ptype, snooper):
         if snooper is None and ptype in self._snoopers:
@@ -132,6 +144,9 @@ class MessageDispatcher(Dispatcher):
 
     def register_default_snooper(self, snooper):
         self._default_snooper = snooper
+
+    def deregister_default_snooper(self, snooper):
+        self._default_snooper = None
 
     def receive(self, data):
         try:
