@@ -5,7 +5,7 @@ import os
 import sys
 import glob
 import serial
-
+import serial.tools.list_ports
 
 __author__ = "Raido Pahtma"
 __license__ = "MIT"
@@ -14,9 +14,9 @@ __license__ = "MIT"
 def _list_windows_serial_ports():
     ports = []
 
-    for i in range(256):
+    for port in serial.tools.list_ports.comports():
         try:
-            s = serial.Serial(i)
+            s = serial.Serial(port.device)
             ports.append(s.portstr)
             s.close()
         except serial.SerialException as e:
