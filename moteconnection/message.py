@@ -70,6 +70,18 @@ class Message(Packet):
     def type(self, ptype):
         self._type = ptype
 
+    @property
+    def lqi(self):
+        if len(self._footer) == 2:
+            return struct.unpack('B', self._footer[0])[0]
+        return 0
+
+    @property
+    def rssi(self):
+        if len(self._footer) == 2:
+            return struct.unpack('b', self._footer[1])[0]
+        return 0
+
     def __str__(self):
         return "{{{0.group:02X}}}{0.source:04X}->{0.destination:04X}[{0.type:02X}]{1:3d}: {2:s}".format(
             self, len(self._payload), self._payload.encode("hex").upper())
