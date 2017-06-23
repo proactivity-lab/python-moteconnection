@@ -1,7 +1,10 @@
 """connection.py: Connection for connecting to serial or sf ports."""
 
+try:
+    import Queue
+except ImportError:
+    import queue as Queue
 import time
-import Queue
 import threading
 
 from moteconnection.utils import split_in_two
@@ -96,6 +99,7 @@ class Connection(threading.Thread):
 
     def connect(self, connection_string, reconnect=None, connected=None, disconnected=None):
         """
+        :param connection_string:
         :param reconnect: Optional reconnect period. Connection is attempted once if not set.
         :param connected: Optional callback for receiving connection establishment notifications.
         :param disconnected: Optional callback for receiving disconnection notifications.

@@ -1,12 +1,17 @@
 """"connection_serial.py: Serial connection object."""
 
-import Queue
+try:
+    import Queue
+    from StringIO import StringIO
+except ImportError:
+    import queue as Queue
+    from io import StringIO
+
 import serial
 import time
 import struct
 
 import threading
-from StringIO import StringIO
 from moteconnection.utils import split_in_two
 from moteconnection.connection_events import ConnectionEvents
 

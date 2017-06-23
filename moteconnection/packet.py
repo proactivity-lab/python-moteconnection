@@ -15,7 +15,7 @@ class Packet(object):
 
     def __init__(self, dispatch=0):
         self._dispatch = dispatch
-        self._payload = ""
+        self._payload = b""
         self.callback = None
 
     @property

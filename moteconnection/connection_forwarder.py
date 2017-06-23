@@ -1,9 +1,12 @@
 """"connection_forwarder.py: SF connection object."""
 
-import socket
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
+import socket
 import threading
-from StringIO import StringIO
 from moteconnection.utils import split_in_two
 from moteconnection.connection_events import ConnectionEvents
 

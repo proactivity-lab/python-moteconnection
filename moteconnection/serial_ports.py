@@ -1,5 +1,7 @@
 """serial_ports.py: Serial port discovery functions."""
 
+from __future__ import print_function
+
 import re
 import os
 import sys
@@ -52,4 +54,4 @@ def list_serial_ports(additional=None):
 
 
 if __name__ == "__main__":
-    print list_serial_ports()
+    print(list_serial_ports())
