@@ -1,12 +1,9 @@
 """"connection_serial.py: Serial connection object."""
 
-try:
-    import Queue
-    from StringIO import StringIO
-except ImportError:
-    import queue as Queue
-    from io import StringIO
+from six.moves import queue as Queue
+from six import BytesIO
 
+from codecs import encode
 import serial
 import time
 import struct
@@ -43,12 +40,12 @@ class SerialPacketException(Exception):
 
 class SerialConnection(threading.Thread):
 
-    HDLC_FRAMING_BYTE = 0x7e
-    HDLC_ESCAPE_BYTE = 0x7d
-    HDLC_XOR_BYTE = 0x20
-    SERIAL_PROTOCOL_ACK = 0x43
-    SERIAL_PROTOCOL_PACKET = 0x44
-    SERIAL_PROTOCOL_NO_ACK_PACKET = 0x45
+    HDLC_FRAMING_BYTE = b'\x7e'
+    HDLC_ESCAPE_BYTE = b'\x7d'
+    HDLC_XOR_BYTE = b'\x20'
+    SERIAL_PROTOCOL_ACK = b'\x43'
+    SERIAL_PROTOCOL_PACKET = b'\x44'
+    SERIAL_PROTOCOL_NO_ACK_PACKET = b'\x45'
     SERIAL_ACK_TIMEOUT = 0.2
     SERIAL_PORT_TIMEOUT = 0.01
     SERIAL_SEND_TRIES = 1
@@ -102,7 +99,12 @@ class SerialConnection(threading.Thread):
         self._queue.put((ConnectionEvents.EVENT_DISCONNECTED, None))
 
     def _process_incoming_packet(self, data):
-        log.debug("recv {:s}".format(data.encode("hex")))
+        """
+
+        :param bytes data:
+        :return:
+        """
+        log.debug("recv {:s}".format(encode(data, "hex")))
         if len(data) > 2:
             packet_data = data[:len(data)-2]
             lcrc = ord(data[len(data)-2:-1])
@@ -113,7 +115,7 @@ class SerialConnection(threading.Thread):
                 raise SerialPacketException("crc mismatch {:04X} != {:04X}".format(crc, packet_crc))
 
             if len(packet_data) > 0:
-                packet_protocol = ord(data[0])
+                packet_protocol = data[0:1]    # python3 compatibility trick
                 packet_data = packet_data[1:]
 
                 if packet_protocol == self.SERIAL_PROTOCOL_ACK:
@@ -139,30 +141,31 @@ class SerialConnection(threading.Thread):
             raise SerialPacketException("not enough data for serial protocols")
 
     def _write(self, seq, packet):
-        data = StringIO()
+        data = BytesIO()
         if seq is None:
-            data.write(chr(self.SERIAL_PROTOCOL_NO_ACK_PACKET))
+            data.write(self.SERIAL_PROTOCOL_NO_ACK_PACKET)
         else:
             if packet is None:
-                data.write(chr(self.SERIAL_PROTOCOL_ACK))
+                data.write(self.SERIAL_PROTOCOL_ACK)
             else:
-                data.write(chr(self.SERIAL_PROTOCOL_PACKET))
+                data.write(self.SERIAL_PROTOCOL_PACKET)
             data.write(chr(seq))
         data.write(packet)
         data.write(struct.pack("<H", itut_g16_crc(data.getvalue())))
 
-        escaped = StringIO()
-        escaped.write(chr(self.HDLC_FRAMING_BYTE))
-        for abyte in data.getvalue():
-            obyte = ord(abyte)
+        escaped = BytesIO()
+        escaped.write(self.HDLC_FRAMING_BYTE)
+        datavalue = data.getvalue()
+        for i in range(len(datavalue)):
+            obyte = datavalue[i:i+1]
             if obyte == self.HDLC_ESCAPE_BYTE or obyte == self.HDLC_FRAMING_BYTE:
-                escaped.write(chr(self.HDLC_ESCAPE_BYTE))
-                escaped.write(chr(obyte ^ self.HDLC_XOR_BYTE))
+                escaped.write(self.HDLC_ESCAPE_BYTE)
+                escaped.write(encode(chr(obyte ^ ord(self.HDLC_XOR_BYTE))))
             else:
-                escaped.write(abyte)
-        escaped.write(chr(self.HDLC_FRAMING_BYTE))
+                escaped.write(obyte)
+        escaped.write(self.HDLC_FRAMING_BYTE)
 
-        log.debug("write {:s}".format(escaped.getvalue().encode("hex")))
+        log.debug("write {:s}".format(encode(escaped.getvalue(), "hex")))
         self._serial_port.write(escaped.getvalue())
 
     def run(self):
@@ -183,16 +186,15 @@ class SerialConnection(threading.Thread):
             timestamp = None
             tries = 0
 
-            recv_buf = StringIO()
+            recv_buf = BytesIO()
             escape = False
 
             while self._alive.isSet():
                 data = self._serial_port.read()
                 if len(data) > 0:
-                    data = ord(data)
                     # log.debug("rcv {:02X}".format(data))
                     if data == self.HDLC_FRAMING_BYTE:
-                        if recv_buf.len > 0:
+                        if len(recv_buf.getvalue()) > 0:
                             try:
                                 seq, packet = self._process_incoming_packet(recv_buf.getvalue())
                                 if seq is None:
@@ -224,17 +226,17 @@ class SerialConnection(threading.Thread):
                                             log.warning("ack for {:02X}, waiting none".format(seq))
 
                             except SerialPacketException as e:
-                                log.warning(e.message)
+                                log.warning(e.args[0])
                             finally:
-                                recv_buf = StringIO()
+                                recv_buf = BytesIO()
 
                     elif data == self.HDLC_ESCAPE_BYTE:
                         escape = True
                     else:
                         if escape:
                             escape = False
-                            data ^= self.HDLC_XOR_BYTE
-                        recv_buf.write(chr(data))
+                            data = encode(chr(data ^ ord(self.HDLC_XOR_BYTE)))
+                        recv_buf.write(data)
                 else:
                     if outgoing is None:
                         try:

@@ -1,12 +1,14 @@
 """message.py: ActiveMessage object."""
 
 import struct
+import logging
+from codecs import encode
+
 from moteconnection.connection import Dispatcher
 from moteconnection.packet import Packet
 
-import logging
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 __author__ = "Raido Pahtma"
 __license__ = "MIT"
@@ -73,18 +75,19 @@ class Message(Packet):
     @property
     def lqi(self):
         if len(self._footer) == 2:
-            return struct.unpack('B', self._footer[0])[0]
+            return struct.unpack('B', self._footer[0:1])[0]
         return 0
 
     @property
     def rssi(self):
         if len(self._footer) == 2:
-            return struct.unpack('b', self._footer[1])[0]
+            return struct.unpack('b', self._footer[1:2])[0]
         return 0
 
     def __str__(self):
-        return "{{{0.group:02X}}}{0.source:04X}->{0.destination:04X}[{0.type:02X}]{1:3d}: {2:s}".format(
-            self, len(self._payload), self._payload.encode("hex").upper())
+        return "{{{0.group:02X}}}{0.source:04X}->{0.destination:04X}[{0.type:02X}]{1:3d}: {2}".format(
+            self, len(self._payload), encode(self._payload, "hex").decode().upper())
+            #self._payload)
 
     def serialize(self):
         return struct.pack(Message.STRUCT_FORMAT_STRING, self.dispatch, self.destination, self.source,
@@ -103,7 +106,7 @@ class Message(Packet):
             else:
                 raise ValueError("Message payload length > actual length {} > {}".format(length, len(rest)))
         except struct.error as e:
-            raise ValueError("Message unpacking error: {}".format(e.message))
+            raise ValueError("Message unpacking error: {}".format(e.args))
 
         return m
 

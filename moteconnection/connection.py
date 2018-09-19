@@ -1,11 +1,9 @@
 """connection.py: Connection for connecting to serial or sf ports."""
 
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
+from six.moves import queue as Queue
 import time
 import threading
+from codecs import encode
 
 from moteconnection.utils import split_in_two
 from moteconnection.connection_events import ConnectionEvents
@@ -145,11 +143,11 @@ class Connection(threading.Thread):
 
     def _receive(self, data):
         if len(data) > 0:
-            dispatch = ord(data[0])
+            dispatch = ord(data[0:1])
             if dispatch in self._dispatchers:
                 self._dispatchers[dispatch].receive(data)
             else:
-                log.debug("No dispatcher for receiving {:02X}".format(dispatch))
+                log.debug("No dispatcher for receiving %02X", dispatch)
         else:
             log.debug("Received 0 bytes of data ...")
 
@@ -158,10 +156,10 @@ class Connection(threading.Thread):
             try:
                 item_type, item = self._queue.get(True, 1.0)
                 if item_type == ConnectionEvents.MESSAGE_INCOMING:
-                    log.debug("incoming {:s}".format(item.encode("hex")))
+                    log.debug("incoming %s", encode(item, "hex"))
                     self._receive(item)
                 elif item_type == ConnectionEvents.MESSAGE_OUTGOING:
-                    log.debug("outgoing {:s}".format(item))
+                    log.debug("outgoing %s", item)
                     self._real_connection.send(item)
                 elif item_type == ConnectionEvents.EVENT_CONNECTED:
                     log.info("connected")

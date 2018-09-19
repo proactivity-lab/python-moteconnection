@@ -22,9 +22,9 @@ def _list_windows_serial_ports():
             ports.append(s.portstr)
             s.close()
         except serial.SerialException as e:
-            msg = e.message.lower()
+            msg = e.args[0].lower()
             if msg.find("could not open port") != -1 and msg.find("access is denied") != -1:
-                match = re.match("could not open port '(\w+)'", msg)
+                match = re.match(r"could not open port '(\w+)'", msg)
                 if match is not None:
                     ports.append(match.group(1).upper())
 

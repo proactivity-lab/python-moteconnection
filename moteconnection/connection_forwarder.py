@@ -1,16 +1,15 @@
 """"connection_forwarder.py: SF connection object."""
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
 import socket
 import threading
 from moteconnection.utils import split_in_two
 from moteconnection.connection_events import ConnectionEvents
-
+from codecs import encode
 import logging
+
+from six import BytesIO
+
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -21,7 +20,7 @@ __license__ = "MIT"
 
 class SfConnection(threading.Thread):
 
-    PROTOCOL_VERSION = "U "
+    PROTOCOL_VERSION = b"U "
 
     def __init__(self, event_queue, host_and_port):
         super(SfConnection, self).__init__()
@@ -56,11 +55,11 @@ class SfConnection(threading.Thread):
                 self._socket.sendall(chr(len(data)))
                 self._socket.sendall(data)
                 acked = True
-                log.debug("snt {:s}".format(data.encode("hex")))
+                log.debug("snt %s", data.encode("hex"))
             except socket.error:
                 self._disconnected()
         else:
-            log.debug("drop {:s}".format(data.encode("hex")))
+            log.debug("drop %s", data.encode("hex"))
 
         if packet.callback:
             packet.callback(packet, acked)
@@ -84,20 +83,20 @@ class SfConnection(threading.Thread):
         self._socket.sendall(self.PROTOCOL_VERSION)
         log.debug("handshake sent")
 
-        buf = StringIO()
-        while buf.len < 2:
-            data = self._socket.recv(2 - buf.len)
+        buf = BytesIO()
+        while len(buf.getvalue()) < 2:
+            data = self._socket.recv(2 - len(buf.getvalue()))
             if data:
                 buf.write(data)
             else:
                 raise socket.error("no data received")
 
-        if buf.getvalue() == "U ":
+        if buf.getvalue() == b"U ":
             log.debug("handshake success")
             self._connected.set()
             self._queue.put((ConnectionEvents.EVENT_CONNECTED, None))
         else:
-            raise socket.error("handshake mismatch '{:s}' != '{:s}'".format(self.PROTOCOL_VERSION, buf.getvalue()))
+            raise socket.error("handshake mismatch {!s} != {!s}".format(self.PROTOCOL_VERSION, buf.getvalue()))
 
     def _receive(self):
         try:
@@ -105,15 +104,15 @@ class SfConnection(threading.Thread):
                 length = self._socket.recv(1)
                 if length:
                     self._recv_length = ord(length)
-                    self._recv_buf = StringIO()
+                    self._recv_buf = BytesIO()
                 else:
                     raise socket.error("no data received")
             else:
-                data = self._socket.recv(self._recv_length - self._recv_buf.len)
+                data = self._socket.recv(self._recv_length - len(self._recv_buf.getvalue()))
                 if data:
                     self._recv_buf.write(data)
-                    if self._recv_length == self._recv_buf.len:
-                        log.debug("rcv {:s}".format(self._recv_buf.getvalue().encode("hex")))
+                    if self._recv_length == len(self._recv_buf.getvalue()):
+                        log.debug("rcv %s", encode(self._recv_buf.getvalue(), "hex"))
                         self._recv_length = 0
                         return self._recv_buf.getvalue()
                 else:
@@ -133,6 +132,6 @@ class SfConnection(threading.Thread):
                 if data is not None:
                     self._queue.put((ConnectionEvents.MESSAGE_INCOMING, data))
         except socket.error as e:
-            log.error("socket.error: {:s}".format(e.message))
+            log.error("socket.error: %s", e.args)
         finally:
             self._disconnected()
