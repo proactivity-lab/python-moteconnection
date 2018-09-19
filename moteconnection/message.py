@@ -87,7 +87,6 @@ class Message(Packet):
     def __str__(self):
         return "{{{0.group:02X}}}{0.source:04X}->{0.destination:04X}[{0.type:02X}]{1:3d}: {2}".format(
             self, len(self._payload), encode(self._payload, "hex").decode().upper())
-            #self._payload)
 
     def serialize(self):
         return struct.pack(Message.STRUCT_FORMAT_STRING, self.dispatch, self.destination, self.source,
@@ -177,4 +176,4 @@ class MessageDispatcher(Dispatcher):
                 elif self._default_snooper is not None:
                     self._deliver(self._default_snooper, m)
         except ValueError as e:
-            log.warning("Failed to deserialize message {}: {}".format(data.encode("hex").upper(), e.message))
+            log.warning("Failed to deserialize message {}: {}".format(data.encode("hex").upper(), e.args[0]))

@@ -52,7 +52,7 @@ class SfConnection(threading.Thread):
         acked = False
         if self._connected.isSet():
             try:
-                self._socket.sendall(chr(len(data)))
+                self._socket.sendall(chr(len(data)).encode())
                 self._socket.sendall(data)
                 acked = True
                 log.debug("snt %s", data.encode("hex"))

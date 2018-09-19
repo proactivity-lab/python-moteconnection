@@ -7,9 +7,9 @@ sf@HOST:SFPORT. Default BAUDRATE is 115200 and default SFPORT is 9002.
 
 from setuptools import setup
 
-doclines = __doc__.split("\n")
-
 import moteconnection
+
+doclines = __doc__.split("\n")
 
 setup(name='moteconnection',
       version=moteconnection.version,

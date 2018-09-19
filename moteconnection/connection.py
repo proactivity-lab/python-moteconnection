@@ -1,6 +1,6 @@
 """connection.py: Connection for connecting to serial or sf ports."""
 
-from six.moves import queue as Queue
+from six.moves import queue
 import time
 import threading
 from codecs import encode
@@ -51,7 +51,7 @@ class Connection(threading.Thread):
         # New connection types can be added here
         self.connection_types = {"loopback": LoopbackConnection, "sf": SfConnection, "serial": SerialConnection}
 
-        self._queue = Queue.Queue()
+        self._queue = queue.Queue()
 
         # Can be connected, disconnected or somewhere in between
         self._connected = threading.Event()
@@ -177,7 +177,7 @@ class Connection(threading.Thread):
                     self._connect()
                 else:
                     raise Exception("item_type is unknown!")
-            except Queue.Empty:
+            except queue.Empty:
                 if self._disconnected.isSet():
                     if self._reconnect_period is not None and self._reconnect_period >= 0:
                         if time.time() > self._last_connect + self._reconnect_period:
@@ -201,7 +201,7 @@ class Dispatcher(object):
 
     @staticmethod
     def _deliver(receiver, message):
-        if isinstance(receiver, Queue.Queue):
+        if isinstance(receiver, queue.Queue):
             receiver.put(message)
         else:
             receiver(message)

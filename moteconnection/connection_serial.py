@@ -1,6 +1,6 @@
 """"connection_serial.py: Serial connection object."""
 
-from six.moves import queue as Queue
+from six.moves import queue
 from six import BytesIO
 
 from codecs import encode
@@ -74,7 +74,7 @@ class SerialConnection(threading.Thread):
             self._seq_out = None
         self._seq_in = None
 
-        self._outqueue = Queue.Queue()
+        self._outqueue = queue.Queue()
         self._recv_length = 0
         self._recv_buf = None
 
@@ -149,7 +149,7 @@ class SerialConnection(threading.Thread):
                 data.write(self.SERIAL_PROTOCOL_ACK)
             else:
                 data.write(self.SERIAL_PROTOCOL_PACKET)
-            data.write(chr(seq))
+            data.write(chr(seq).encode())
         data.write(packet)
         data.write(struct.pack("<H", itut_g16_crc(data.getvalue())))
 
@@ -244,7 +244,7 @@ class SerialConnection(threading.Thread):
                             serialized = outgoing.serialize()
                             tries = self.SERIAL_SEND_TRIES
                             timestamp = 0
-                        except Queue.Empty:
+                        except queue.Empty:
                             pass
 
                     if outgoing is not None:
