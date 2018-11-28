@@ -46,7 +46,7 @@ class Packet(object):
     def deserialize(data):
         if len(data) == 0:
             raise ValueError("At least 1 byte is required to deserialize a Packet!")
-        p = Packet(dispatch=ord(data[0]))
+        p = Packet(dispatch=ord(data[0:1]))
         p.payload = data[1:]
         return p
 
