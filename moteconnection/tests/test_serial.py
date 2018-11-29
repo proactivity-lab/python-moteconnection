@@ -54,7 +54,7 @@ class IncomingPacketTester(TestCase):
 
         # First packet
         try:
-            with get_connection(receive_queue.put, b'\x7E\x44\x00\xFF\x9D\xDF\x7E'):
+            with get_connection(receive_queue, b'\x7E\x44\x00\xFF\x9D\xDF\x7E'):
                 packet = receive_queue.get(timeout=1)
         except queue.Empty:
             self.fail('Did not receive enough packets (0)')
@@ -63,7 +63,7 @@ class IncomingPacketTester(TestCase):
 
         # Seconds packet
         try:
-            with get_connection(receive_queue.put,
+            with get_connection(receive_queue,
                                 b'\x7E\x44\x00\x0E\x01\x02\x03\x04\x05\x06\x07'
                                 b'\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x3B\x8B\x7E'):
                 packet = receive_queue.get(timeout=1)
@@ -75,7 +75,7 @@ class IncomingPacketTester(TestCase):
 
         # Third packet
         try:
-            with get_connection(receive_queue.put, b'\x7E\x44\x00\x0E\x7D\x5E\x7D\x5E\x7D\x5E\xED\xB9\x7E'):
+            with get_connection(receive_queue, b'\x7E\x44\x00\x0E\x7D\x5E\x7D\x5E\x7D\x5E\xED\xB9\x7E'):
                 packet = receive_queue.get(timeout=1)
         except queue.Empty:
             self.fail('Did not receive enough packets (2)')
@@ -85,7 +85,7 @@ class IncomingPacketTester(TestCase):
 
         # Fourth packet
         try:
-            with get_connection(receive_queue.put, b'\x7E\x44\x00\x0E\x7D\x5D\x7D\x5E\x33\x62\x7E'):
+            with get_connection(receive_queue, b'\x7E\x44\x00\x0E\x7D\x5D\x7D\x5E\x33\x62\x7E'):
                 packet = receive_queue.get(timeout=1)
         except queue.Empty:
             self.fail('Did not receive enough packets (3)')

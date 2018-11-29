@@ -68,6 +68,6 @@ class PacketDispatcher(Dispatcher):
         try:
             p = Packet.deserialize(data)
             if self._receiver is not None:
-                self._receiver(p)
+                self._deliver(self._receiver, p)
         except ValueError:
             log.warning("Failed to deserialize packet {}".format(encode(data, "hex").upper()))

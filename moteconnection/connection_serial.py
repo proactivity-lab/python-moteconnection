@@ -50,17 +50,28 @@ class SerialConnection(threading.Thread):
     SERIAL_PORT_TIMEOUT = 0.01
     SERIAL_SEND_TRIES = 1
 
-    def __init__(self, event_queue, port_and_baud, require_acks=True):
+    def __init__(self, event_queue, port_and_baud):
         super(SerialConnection, self).__init__()
         self._queue = event_queue
 
         self._serial_port = None
 
-        self._settings_port, baud = split_in_two(port_and_baud, ":")
+        self._settings_port, baud_acks = split_in_two(port_and_baud, ":")
+
+        baud, acks = split_in_two(baud_acks, "*")
         if len(baud) > 0:
             self._settings_baud = int(baud)
         else:
             self._settings_baud = 115200
+
+        require_acks = True
+        if len(acks) > 0:
+            if acks == "ACK":
+                require_acks = True
+            elif acks == "NOACK":
+                require_acks = False
+            else:
+                log.warning("Unrecognized ACK configuration '%s'", acks)
 
         self._alive = threading.Event()
         self._alive.set()
