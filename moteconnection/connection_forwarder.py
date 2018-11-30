@@ -55,11 +55,11 @@ class SfConnection(threading.Thread):
                 self._socket.sendall(chr(len(data)).encode())
                 self._socket.sendall(data)
                 acked = True
-                log.debug("snt %s", data.encode("hex"))
+                log.debug("snt %s", encode(data, "hex"))
             except socket.error:
                 self._disconnected()
         else:
-            log.debug("drop %s", data.encode("hex"))
+            log.debug("drop %s", encode(data, "hex"))
 
         if packet.callback:
             packet.callback(packet, acked)
