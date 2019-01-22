@@ -1,18 +1,18 @@
 """"connection_serial.py: Serial connection object."""
 
-from six.moves import queue
-from six import BytesIO
-
-from codecs import encode
-import serial
-import time
-import struct
-
-import threading
-from moteconnection.utils import split_in_two
-from moteconnection.connection_events import ConnectionEvents
-
 import logging
+import struct
+import threading
+import time
+from codecs import encode
+
+import serial
+from six import BytesIO
+from six.moves import queue
+
+from moteconnection.connection_events import ConnectionEvents
+from moteconnection.utils import split_in_two
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -25,7 +25,7 @@ def itut_g16_crc(data):
     crc = 0
     for p in range(len(data)):
         crc ^= ord(data[p:p+1]) << 8
-        for i in range(0, 8):
+        for _ in range(0, 8):
             if crc & 0x8000 != 0:
                 crc = (crc << 1) ^ 0x1021
             else:

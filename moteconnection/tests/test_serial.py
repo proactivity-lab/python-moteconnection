@@ -1,11 +1,11 @@
 import codecs
-from unittest import TestCase
 from contextlib import contextmanager
+from unittest import TestCase
 
 import mock
+import serial
 import six
 from six.moves import queue
-import serial
 
 from moteconnection.connection import Connection
 from moteconnection.packet import Packet, PacketDispatcher

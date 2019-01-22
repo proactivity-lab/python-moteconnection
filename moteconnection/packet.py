@@ -1,11 +1,11 @@
 """packet.py: Raw packet object."""
 
+import logging
 import struct
 from codecs import encode
 
 from moteconnection.connection import Dispatcher
 
-import logging
 log = logging.getLogger(__name__)
 
 

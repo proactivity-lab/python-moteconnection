@@ -1,16 +1,17 @@
 """connection.py: Connection for connecting to serial or sf ports."""
 
-from six.moves import queue
-import time
+import logging
 import threading
+import time
 from codecs import encode
 
-from moteconnection.utils import split_in_two
-from moteconnection.connection_events import ConnectionEvents
-from moteconnection.connection_serial import SerialConnection
-from moteconnection.connection_forwarder import SfConnection
+from six.moves import queue
 
-import logging
+from moteconnection.connection_events import ConnectionEvents
+from moteconnection.connection_forwarder import SfConnection
+from moteconnection.connection_serial import SerialConnection
+from moteconnection.utils import split_in_two
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 

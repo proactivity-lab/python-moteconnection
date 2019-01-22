@@ -1,14 +1,14 @@
 """"connection_forwarder.py: SF connection object."""
 
+import logging
 import socket
 import threading
-from moteconnection.utils import split_in_two
-from moteconnection.connection_events import ConnectionEvents
 from codecs import encode
-import logging
 
 from six import BytesIO
 
+from moteconnection.connection_events import ConnectionEvents
+from moteconnection.utils import split_in_two
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)

@@ -2,10 +2,11 @@
 
 from __future__ import print_function
 
-import re
-import os
-import sys
 import glob
+import os
+import re
+import sys
+
 import serial
 import serial.tools.list_ports
 

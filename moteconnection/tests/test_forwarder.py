@@ -1,5 +1,5 @@
-from unittest import TestCase
 import codecs
+from unittest import TestCase
 
 import mock
 import six

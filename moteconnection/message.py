@@ -1,12 +1,11 @@
 """message.py: ActiveMessage object."""
 
-import struct
 import logging
+import struct
 from codecs import encode
 
 from moteconnection.connection import Dispatcher
 from moteconnection.packet import Packet
-
 
 log = logging.getLogger(__name__)
 
