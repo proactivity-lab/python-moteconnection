@@ -93,10 +93,10 @@ class SerialConnection(threading.Thread):
 
     def send(self, packet):
         if self._connected.isSet():
-            log.debug("snd {:s}".format(packet))
+            log.debug("snd %s", packet)
             self._outqueue.put(packet)
         else:
-            log.debug("drop {:s}".format(packet))
+            log.debug("drop %s", packet)
 
     def join(self, timeout=None):
         self._alive.clear()
@@ -228,7 +228,7 @@ class SerialConnection(threading.Thread):
                                     else:
                                         if outgoing is not None and self._seq_out is not None:
                                             if seq == self._seq_out:
-                                                log.debug("ack for {:02X}".format(seq))
+                                                log.debug("ack for %02X", seq)
                                                 if outgoing.callback is not None:
                                                     outgoing.callback(outgoing, True)
                                                 outgoing = None
