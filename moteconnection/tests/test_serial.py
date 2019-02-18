@@ -110,7 +110,7 @@ class OutgoingPacketTester(TestCase):
 
     def test_outgoing_ack_packet(self):
         """
-        Tests the outgoing ack packets overs serial.
+        Tests the outgoing ack packets over serial.
         """
 
         # Our sequence numbers don't grow... New connection each time should fix that
@@ -174,6 +174,6 @@ class OutgoingPacketTester(TestCase):
 
     def test_outgoing_noack_packet(self):
         """
-        Tests the outgoing noack packets overs serial.
+        Tests the outgoing noack packets over serial.
         """
         pass
