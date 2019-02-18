@@ -55,6 +55,11 @@ def construct_connection(connection_string):
     )
 
     dispatcher = MessageDispatcher()
+    # This example uses a callback function (print in this case). The callback function
+    # _must_ take exactly 1 positional argument. That argument will be an instance of
+    # `moteconnection.message.Message`.
+    # The alternatice method to using a callback function is to pass an instance of
+    # `queue.Queue` (python3) or `Queue.Queue` (python2) to these methoods.
     dispatcher.register_default_snooper(print)
     dispatcher.register_default_receiver(print)
     connection.register_dispatcher(dispatcher)
