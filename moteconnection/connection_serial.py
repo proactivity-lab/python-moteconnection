@@ -173,7 +173,7 @@ class SerialConnection(threading.Thread):
             obyte = datavalue[i:i+1]
             if obyte == self.HDLC_ESCAPE_BYTE or obyte == self.HDLC_FRAMING_BYTE:
                 escaped.write(self.HDLC_ESCAPE_BYTE)
-                escaped.write(encode(chr(obyte ^ ord(self.HDLC_XOR_BYTE))))
+                escaped.write(encode(chr(ord(obyte) ^ ord(self.HDLC_XOR_BYTE))))
             else:
                 escaped.write(obyte)
         escaped.write(self.HDLC_FRAMING_BYTE)
