@@ -1,9 +1,11 @@
 """packet.py: Raw packet object."""
 
+import logging
 import struct
+from codecs import encode
+
 from moteconnection.connection import Dispatcher
 
-import logging
 log = logging.getLogger(__name__)
 
 
@@ -15,7 +17,7 @@ class Packet(object):
 
     def __init__(self, dispatch=0):
         self._dispatch = dispatch
-        self._payload = ""
+        self._payload = b""
         self.callback = None
 
     @property
@@ -38,13 +40,13 @@ class Packet(object):
         return struct.pack("! B", self._dispatch) + self._payload
 
     def __str__(self):
-        return "[{0._dispatch:02X}]{1:s}".format(self, self._payload.encode("hex").upper())
+        return "[{0._dispatch:02X}]{1:s}".format(self, encode(self._payload, "hex").upper())
 
     @staticmethod
     def deserialize(data):
         if len(data) == 0:
             raise ValueError("At least 1 byte is required to deserialize a Packet!")
-        p = Packet(dispatch=ord(data[0]))
+        p = Packet(dispatch=ord(data[0:1]))
         p.payload = data[1:]
         return p
 
@@ -68,4 +70,4 @@ class PacketDispatcher(Dispatcher):
             if self._receiver is not None:
                 self._deliver(self._receiver, p)
         except ValueError:
-            log.warning("Failed to deserialize packet {}".format(data.encode("hex").upper()))
+            log.warning("Failed to deserialize packet {}".format(encode(data, "hex").upper()))

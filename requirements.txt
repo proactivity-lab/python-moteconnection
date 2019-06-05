@@ -1,1 +1,6 @@
 pyserial
+six
+enum34
+# Tests
+nose
+mock

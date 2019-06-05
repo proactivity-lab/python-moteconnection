@@ -1,9 +1,12 @@
 """serial_ports.py: Serial port discovery functions."""
 
-import re
-import os
-import sys
+from __future__ import print_function
+
 import glob
+import os
+import re
+import sys
+
 import serial
 import serial.tools.list_ports
 
@@ -20,9 +23,9 @@ def _list_windows_serial_ports():
             ports.append(s.portstr)
             s.close()
         except serial.SerialException as e:
-            msg = e.message.lower()
+            msg = e.args[0].lower()
             if msg.find("could not open port") != -1 and msg.find("access is denied") != -1:
-                match = re.match("could not open port '(\w+)'", msg)
+                match = re.match(r"could not open port '(\w+)'", msg)
                 if match is not None:
                     ports.append(match.group(1).upper())
 
@@ -52,4 +55,4 @@ def list_serial_ports(additional=None):
 
 
 if __name__ == "__main__":
-    print list_serial_ports()
+    print(list_serial_ports())

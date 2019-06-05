@@ -1,15 +1,17 @@
 """connection.py: Connection for connecting to serial or sf ports."""
 
-import time
-import Queue
-import threading
-
-from moteconnection.utils import split_in_two
-from moteconnection.connection_events import ConnectionEvents
-from moteconnection.connection_serial import SerialConnection
-from moteconnection.connection_forwarder import SfConnection
-
 import logging
+import threading
+import time
+from codecs import encode
+
+from six.moves import queue
+
+from moteconnection.connection_events import ConnectionEvents
+from moteconnection.connection_forwarder import SfConnection
+from moteconnection.connection_serial import SerialConnection
+from moteconnection.utils import split_in_two
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
@@ -50,7 +52,7 @@ class Connection(threading.Thread):
         # New connection types can be added here
         self.connection_types = {"loopback": LoopbackConnection, "sf": SfConnection, "serial": SerialConnection}
 
-        self._queue = Queue.Queue()
+        self._queue = queue.Queue()
 
         # Can be connected, disconnected or somewhere in between
         self._connected = threading.Event()
@@ -96,6 +98,7 @@ class Connection(threading.Thread):
 
     def connect(self, connection_string, reconnect=None, connected=None, disconnected=None):
         """
+        :param connection_string:
         :param reconnect: Optional reconnect period. Connection is attempted once if not set.
         :param connected: Optional callback for receiving connection establishment notifications.
         :param disconnected: Optional callback for receiving disconnection notifications.
@@ -141,11 +144,11 @@ class Connection(threading.Thread):
 
     def _receive(self, data):
         if len(data) > 0:
-            dispatch = ord(data[0])
+            dispatch = ord(data[0:1])
             if dispatch in self._dispatchers:
                 self._dispatchers[dispatch].receive(data)
             else:
-                log.debug("No dispatcher for receiving {:02X}".format(dispatch))
+                log.debug("No dispatcher for receiving %02X", dispatch)
         else:
             log.debug("Received 0 bytes of data ...")
 
@@ -154,10 +157,10 @@ class Connection(threading.Thread):
             try:
                 item_type, item = self._queue.get(True, 1.0)
                 if item_type == ConnectionEvents.MESSAGE_INCOMING:
-                    log.debug("incoming {:s}".format(item.encode("hex")))
+                    log.debug("incoming %s", encode(item, "hex"))
                     self._receive(item)
                 elif item_type == ConnectionEvents.MESSAGE_OUTGOING:
-                    log.debug("outgoing {:s}".format(item))
+                    log.debug("outgoing %s", item)
                     self._real_connection.send(item)
                 elif item_type == ConnectionEvents.EVENT_CONNECTED:
                     log.info("connected")
@@ -175,7 +178,7 @@ class Connection(threading.Thread):
                     self._connect()
                 else:
                     raise Exception("item_type is unknown!")
-            except Queue.Empty:
+            except queue.Empty:
                 if self._disconnected.isSet():
                     if self._reconnect_period is not None and self._reconnect_period >= 0:
                         if time.time() > self._last_connect + self._reconnect_period:
@@ -199,7 +202,7 @@ class Dispatcher(object):
 
     @staticmethod
     def _deliver(receiver, message):
-        if isinstance(receiver, Queue.Queue):
+        if isinstance(receiver, queue.Queue):
             receiver.put(message)
         else:
             receiver(message)
