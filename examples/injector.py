@@ -3,7 +3,8 @@ This example sets up a connection and sends a packet specified on command line a
 
 To run this example as a script, the following command:
 ```
-$ python -m example.injector sf@location:port DEADBEEFDEADBEEF
+$ python3 -m examples.injector --amid 0x76 --src 0xFAFA --dest 0xFFFF --group 0x99 sf@injector01.local DEADBEEFDEADBEEF
+
 ```
 """
 from __future__ import print_function
@@ -18,10 +19,10 @@ from moteconnection.connection import Connection
 from moteconnection.message import MessageDispatcher, Message
 
 
-def send_packet(connection_string, amid, dest, src, hex_data):
+def send_packet(connection_string, amid, dest, src, group, hex_data):
     """Send the packet with specified AM ID."""
 
-    connection = construct_connection(connection_string, src)
+    connection = construct_connection(connection_string, src, group)
 
     bin_data = decode(hex_data, "hex")
     msg = Message(amid, dest, bin_data)
@@ -34,7 +35,7 @@ def send_packet(connection_string, amid, dest, src, hex_data):
     connection.join()
 
 
-def construct_connection(connection_string, src):
+def construct_connection(connection_string, src, group):
     """
     Constructs the connection object and returns it.
 
@@ -53,7 +54,7 @@ def construct_connection(connection_string, src):
         disconnected=partial(print, "Disconnected from {}".format(connection_string))
     )
 
-    dispatcher = MessageDispatcher(src)
+    dispatcher = MessageDispatcher(src, group)
     connection.register_dispatcher(dispatcher)
     return connection
 
@@ -81,6 +82,9 @@ def get_args():
     parser.add_argument('--src', '-s',
                         default='0xCCC4',
                         help='Source address')
+    parser.add_argument('--group', '-g',
+                        default='0x22',
+                        help='Group ID')
     parser.add_argument("data",
                         help='Binary data (hex)')
     return parser.parse_args()
@@ -91,7 +95,13 @@ def main():
     args = get_args()
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG)
-    send_packet(args.connection, int(args.amid, base=0), int(args.dest, base=0), int(args.src, base=0), args.data)
+    send_packet(
+        args.connection, 
+        int(args.amid, base=0), 
+        int(args.dest, base=0), 
+        int(args.src, base=0), 
+        int(args.group, base=0), 
+        args.data)
 
 
 if __name__ == '__main__':
